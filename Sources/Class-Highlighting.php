@@ -17,8 +17,10 @@ if (!defined('SMF'))
 
 final class Highlighting
 {
+	// [alkisg]: add smaller
 	private const FONTSIZE_SET = [
 		'x-small' => 'x-small',
+		'smaller' => 'smaller',
 		'small'   => 'small',
 		'medium'  => 'medium',
 		'large'   => 'large',
@@ -85,11 +87,14 @@ final class Highlighting
 		// Load styles and scripts
 		loadCSSFile('highlight.css');
 
+		// [alkisg]: source highlight-glossa.js
 		$context['insert_after_template'] .= '
 		<script src="' . $context['ch_jss_path'] . '"></script>' . (!empty($modSettings['ch_line_numbers']) ? '
 		<script src="' . $context['ch_dln_path'] . '"></script>' : '') . '
 		<script src="' . $context['ch_clb_path'] . '"></script>
+		<script src="' . $settings['default_theme_url'] . '/scripts/highlight-glossa.js"></script>
 		<script>
+			hljs.configure({languageDetectRe:/\blang(?:uage)?-([\u0386-\u03ce\w-]+)/i});
 			hljs.highlightAll();' . (!empty($modSettings['ch_line_numbers']) ? '
 			hljs.initLineNumbersOnLoad();' : '') . '
 			window.addEventListener("load", function() {
@@ -164,7 +169,11 @@ final class Highlighting
 			return;
 
 		$message = preg_replace_callback('~<pre(.*?)>(.*?)<\/pre>~si', function ($matches) {
-			return str_replace('<br>', "\n", $matches[0]);
+			// [alkisg]: also trim and replace <br />
+			$result = str_replace(['<br>', '<br />'], PHP_EOL, $matches[0]);
+			$result = preg_replace('/\s*(<\/code>)/', PHP_EOL . '${1}', $result);
+			$result = preg_replace('/(<code[^>]*>)\s*/', PHP_EOL . '${1}', $result);
+			return $result;
 		}, $message);
 	}
 
